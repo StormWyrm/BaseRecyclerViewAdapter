@@ -11,3 +11,6 @@
 /build
 /captures
 .externalNativeBuild
+app/libs/
+lib/libs/
+lib/src/main/res/drawable/
