@@ -40,6 +40,20 @@ class MainActivity : AppCompatActivity() {
         adapter.onItemClickListener = { helper, view, position ->
             Toast.makeText(this, "点击位置: $position", Toast.LENGTH_SHORT).show()
         }
+        adapter.onItemChildClickListener = { helper, view, position ->
+            when (view.id) {
+                R.id.iv -> Toast.makeText(this, "点击图片: $position", Toast.LENGTH_SHORT).show()
+                R.id.ll -> Toast.makeText(this, "点击文字: $position", Toast.LENGTH_SHORT).show()
+            }
+        }
+        adapter.onItemChildLongClickListener = { helper, view, position ->
+            when (view.id) {
+                R.id.iv -> Toast.makeText(this, "长点击图片: $position", Toast.LENGTH_SHORT).show()
+                R.id.ll -> Toast.makeText(this, "长点击文字: $position", Toast.LENGTH_SHORT).show()
+            }
+            true
+        }
+        adapter.onItemChildClickListener
         rv.layoutManager = LinearLayoutManager(this)
         rv.adapter = adapter
     }
@@ -48,6 +62,9 @@ class MainActivity : AppCompatActivity() {
 
         override fun convert(viewHolder: BaseViewHolder, item: String) {
             viewHolder.setText(R.id.textView1, item)
+                .addChildClickId(R.id.iv, R.id.ll)
+                .addChildLongClickId(R.id.iv, R.id.ll)
+
         }
     }
 }

@@ -6,7 +6,6 @@ import android.view.ViewGroup
 import androidx.annotation.IntRange
 import androidx.annotation.LayoutRes
 import androidx.recyclerview.widget.RecyclerView
-import kotlin.RuntimeException
 
 abstract class BaseQuickAdapter<T>(
     @LayoutRes val layoutId: Int,
@@ -16,10 +15,10 @@ abstract class BaseQuickAdapter<T>(
     lateinit var mLayoutInflater: LayoutInflater
         private set
 
-    var onItemClickListener: ((adapter: BaseQuickAdapter<T>, v: View, position: Int) -> Unit)? = null
-    var onItemLongClickListener: ((adapter: BaseQuickAdapter<T>, v: View, position: Int) -> Boolean)? = null
-    var onItemChildClickListener: ((adapter: BaseQuickAdapter<T>, v: View, position: Int) -> Unit)? = null
-    var onItemChildLongClickListener: ((adapter: BaseQuickAdapter<T>, v: View, position: Int) -> Boolean)? = null
+    var onItemClickListener: ((BaseQuickAdapter<*>, View, Int) -> Unit)? = null
+    var onItemLongClickListener: ((BaseQuickAdapter<*>, View, Int) -> Boolean)? = null
+    var onItemChildClickListener: ((BaseQuickAdapter<*>, View, Int) -> Unit)? = null
+    var onItemChildLongClickListener: ((BaseQuickAdapter<*>, View, Int) -> Boolean)? = null
 
     constructor(layoutId: Int) : this(layoutId, null)
 
@@ -27,8 +26,9 @@ abstract class BaseQuickAdapter<T>(
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
         mLayoutInflater = LayoutInflater.from(parent.context)
-        val itemView = mLayoutInflater.inflate(layoutId, parent,false)
+        val itemView = mLayoutInflater.inflate(layoutId, parent, false)
         val baseViewHolder = BaseViewHolder(itemView)
+        baseViewHolder.adapter = this
         bindViewClickListener(baseViewHolder)
         return baseViewHolder
     }
