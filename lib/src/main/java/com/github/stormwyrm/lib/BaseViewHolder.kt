@@ -19,9 +19,9 @@ class BaseViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         for (id in ids) {
             childClickViewIds.add(id)
             val view = getView<View>(id)
-            view.setOnClickListener { view ->
-                adapter?.let {
-                    it.onItemChildClickListener?.invoke(it, view, layoutPosition)
+            view.setOnClickListener {
+                adapter?.run {
+                    onItemChildClickListener?.invoke(this, it, layoutPosition)
                 }
             }
         }
@@ -32,9 +32,9 @@ class BaseViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         for (id in ids) {
             childLongClickViewIds.add(id)
             val view = getView<View>(id)
-            view.setOnLongClickListener { view ->
-                adapter?.let {
-                    return@setOnLongClickListener it.onItemChildLongClickListener?.invoke(it, view, layoutPosition)
+            view.setOnLongClickListener {
+                adapter?.run {
+                    onItemChildLongClickListener?.invoke(this, view, layoutPosition)
                         ?: false
                 } ?: false
             }

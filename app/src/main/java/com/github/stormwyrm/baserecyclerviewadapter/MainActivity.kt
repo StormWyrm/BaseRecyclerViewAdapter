@@ -1,70 +1,35 @@
 package com.github.stormwyrm.baserecyclerviewadapter
 
+import android.content.Intent
 import android.os.Bundle
-import android.widget.Toast
-import androidx.appcompat.app.AppCompatActivity
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager
 import com.github.stormwyrm.lib.BaseQuickAdapter
 import com.github.stormwyrm.lib.BaseViewHolder
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : BaseActivity() {
+    val title = arrayListOf("Basis Setting", "HeaderAndFooter")
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setTitle("BaseRecyclerViewAdapter")
+        setBackListener(null)
         setContentView(R.layout.activity_main)
-        initData()
-    }
-
-    private fun initData() {
-        val data = arrayListOf(
-            "string 0",
-            "string 1",
-            "string 2",
-            "string 0",
-            "string 1",
-            "string 2",
-            "string 3",
-            "string 4",
-            "string 5",
-            "string 6",
-            "string 3",
-            "string 4",
-            "string 5",
-            "string 6"
-        )
-        val adapter = MainAdapter(data)
-        adapter.onItemLongClickListener = { helper, view, position ->
-            Toast.makeText(this, "长按位置: $position", Toast.LENGTH_SHORT).show()
-            true
-        }
-        adapter.onItemClickListener = { helper, view, position ->
-            Toast.makeText(this, "点击位置: $position", Toast.LENGTH_SHORT).show()
-        }
-        adapter.onItemChildClickListener = { helper, view, position ->
-            when (view.id) {
-                R.id.iv -> Toast.makeText(this, "点击图片: $position", Toast.LENGTH_SHORT).show()
-                R.id.ll -> Toast.makeText(this, "点击文字: $position", Toast.LENGTH_SHORT).show()
+        val adapter = MainAdapter(title)
+        adapter.onItemClickListener = { helper, view, positioin ->
+            when (positioin) {
+                0 -> startActivity(Intent(this@MainActivity,BasisSetttingActivity::class.java))
+                1 -> startActivity(Intent(this@MainActivity,HeaderAndFooterActivity::class.java))
             }
         }
-        adapter.onItemChildLongClickListener = { helper, view, position ->
-            when (view.id) {
-                R.id.iv -> Toast.makeText(this, "长点击图片: $position", Toast.LENGTH_SHORT).show()
-                R.id.ll -> Toast.makeText(this, "长点击文字: $position", Toast.LENGTH_SHORT).show()
-            }
-            true
-        }
-        adapter.onItemChildClickListener
-        rv.layoutManager = LinearLayoutManager(this)
-        rv.adapter = adapter
+        rvMain.layoutManager = GridLayoutManager(this, 2)
+        rvMain.adapter = adapter
     }
 
-    private class MainAdapter(data: List<String>) : BaseQuickAdapter<String>(R.layout.recycler_view_item, data) {
+    private class MainAdapter(data: List<String>) : BaseQuickAdapter<String>(R.layout.item_main, data) {
 
         override fun convert(viewHolder: BaseViewHolder, item: String) {
-            viewHolder.setText(R.id.textView1, item)
-                .addChildClickId(R.id.iv, R.id.ll)
-                .addChildLongClickId(R.id.iv, R.id.ll)
-
+            viewHolder.setText(R.id.tvTitle, item)
         }
     }
 }
