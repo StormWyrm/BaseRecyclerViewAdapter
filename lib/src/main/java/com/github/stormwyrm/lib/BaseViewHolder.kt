@@ -32,16 +32,12 @@ class BaseViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         for (id in ids) {
             childLongClickViewIds.add(id)
             val view = getView<View>(id)
-            view.setOnLongClickListener(
-                object : View.OnLongClickListener {
-                    override fun onLongClick(v: View?): Boolean {
-                        adapter?.let {
-                            return it.onItemChildLongClickListener?.invoke(it, view, layoutPosition) ?: false
-                        }
-                    }
-
-                }
-            )
+            view.setOnLongClickListener { view ->
+                adapter?.let {
+                    return@setOnLongClickListener it.onItemChildLongClickListener?.invoke(it, view, layoutPosition)
+                        ?: false
+                } ?: false
+            }
         }
         return this
     }
