@@ -1,16 +1,16 @@
 package com.github.stormwyrm.lib
 
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.widget.FrameLayout
 import android.widget.LinearLayout
-import android.widget.LinearLayout.LayoutParams
 import androidx.annotation.IntRange
 import androidx.annotation.LayoutRes
 import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.RecyclerView.LayoutParams
 
 abstract class BaseQuickAdapter<T>(
     @LayoutRes val layoutId: Int,
@@ -18,16 +18,15 @@ abstract class BaseQuickAdapter<T>(
 ) : RecyclerView.Adapter<BaseViewHolder>() {
     val HEADER_VIEW = 0x00000111
     val FOOTER_VIEW = 0x00000222
-    val DEFAULT_VIEW = 0x00000333
+    val EMPTY_VIEW = 0x00000333
+    val DEFAULT_VIEW = 0x00000444
 
     lateinit var mLayoutInflater: LayoutInflater
         private set
 
-    lateinit var mContext: Context
-        private set
-
-    var mHeaderLayout: LinearLayout? = null
-    var mFooterLayout: LinearLayout? = null
+    private var mHeaderLayout: LinearLayout? = null
+    private var mFooterLayout: LinearLayout? = null
+    private var mEmptyLayout: FrameLayout? = null
 
     var onItemClickListener: ((BaseQuickAdapter<*>, View, Int) -> Unit)? = null
     var onItemLongClickListener: ((BaseQuickAdapter<*>, View, Int) -> Boolean)? = null
@@ -38,16 +37,22 @@ abstract class BaseQuickAdapter<T>(
 
     constructor(data: List<T>?) : this(0, data)
 
+    override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
+        super.onAttachedToRecyclerView(recyclerView)
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
-        mContext = parent.context
-        mLayoutInflater = LayoutInflater.from(mContext)
-        var baseViewHolder : BaseViewHolder
-        when(viewType){
+        mLayoutInflater = LayoutInflater.from(parent.context)
+        var baseViewHolder: BaseViewHolder
+        when (viewType) {
             HEADER_VIEW ->
                 baseViewHolder = BaseViewHolder(mHeaderLayout!!)
             FOOTER_VIEW ->
                 baseViewHolder = BaseViewHolder(mFooterLayout!!)
-            else ->{
+            EMPTY_VIEW ->{
+                baseViewHolder = BaseViewHolder(mEmptyLayout!!)
+            }
+            else -> {
                 val itemView = mLayoutInflater.inflate(layoutId, parent, false)
                 baseViewHolder = BaseViewHolder(itemView)
                 baseViewHolder.adapter = this
@@ -59,24 +64,46 @@ abstract class BaseQuickAdapter<T>(
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
         val itemViewType = getItemViewType(position)
-        when(itemViewType){
-            DEFAULT_VIEW ->{
+        when (itemViewType) {
+            DEFAULT_VIEW -> {
                 convert(holder, getItem(position - getHeaderLayoutCount()))
             }
         }
     }
 
     override fun getItemCount(): Int =
-        (mData?.size ?: 0) + getHeaderLayoutCount() + getFooterLayoutCount()
+        if (getEmptyLayoutCount() == 1) {
+            getHeaderLayoutCount() + getEmptyLayoutCount() + getFooterLayoutCount()
+        } else {
+            (mData?.size ?: 0) + getHeaderLayoutCount() + getFooterLayoutCount()
+        }
 
     override fun getItemViewType(position: Int): Int {
+        //有Empty时候，itemcount最大为3 最小为1
+        if (getEmptyLayoutCount() == 1) {
+            val hasHeader = getHeaderLayoutCount() == 1
+            when (position) {
+                0 -> return if (hasHeader) {
+                    HEADER_VIEW
+                } else
+                    EMPTY_VIEW
+
+                1 -> return if (hasHeader)
+                    FOOTER_VIEW
+                else
+                    EMPTY_VIEW
+
+                2 -> return FOOTER_VIEW
+            }
+        }
+
         val headerNum = getHeaderLayoutCount()
         return if (position < headerNum) {
             HEADER_VIEW
         } else {
             val adjPosition = position - headerNum
+            //在存在EmptyView时候
             val adapterCount = mData?.size ?: 0
-
             //判断是否为adapter中的布局
             if (adjPosition < adapterCount)
                 DEFAULT_VIEW
@@ -86,21 +113,27 @@ abstract class BaseQuickAdapter<T>(
         }
     }
 
+    override fun onViewAttachedToWindow(holder: BaseViewHolder) {
+        super.onViewAttachedToWindow(holder)
+        val type = holder.itemViewType
+        if (type == EMPTY_VIEW || type == HEADER_VIEW || type == FOOTER_VIEW) {
+            setFullSpan(holder)
+        }
+    }
+
+    fun setNewData(newData: List<T>) {
+        mData = newData
+        notifyDataSetChanged()
+    }
+
     fun getItem(@IntRange(from = 0) position: Int): T =
         mData?.get(position) ?: throw RuntimeException("the data is empty")
 
-    fun addHeaderView(headerView: View): Int {
-        return addHeaderView(headerView, 0)
-    }
 
-    fun addHeaderView(headerView: View, index: Int): Int {
-        return addHeaderView(headerView, index, LinearLayout.VERTICAL)
-    }
-
-    fun addHeaderView(header: View, index: Int, orientation: Int): Int {
+    fun addHeaderView(headerView: View, index: Int = 0, orientation: Int = LinearLayout.VERTICAL): Int {
         var index = index
         if (mHeaderLayout == null) {
-            mHeaderLayout = LinearLayout(header.context)
+            mHeaderLayout = LinearLayout(headerView.context)
             if (orientation == LinearLayout.VERTICAL) {
                 mHeaderLayout?.orientation = LinearLayout.VERTICAL
                 mHeaderLayout?.layoutParams = LayoutParams(MATCH_PARENT, WRAP_CONTENT)
@@ -113,7 +146,7 @@ abstract class BaseQuickAdapter<T>(
         if (index < 0 || index > childCount) {
             index = childCount
         }
-        mHeaderLayout?.addView(header, index)
+        mHeaderLayout?.addView(headerView, index)
 
         //只有添加第一个布局时，才会插入
         if (mHeaderLayout?.childCount == 1) {
@@ -125,15 +158,8 @@ abstract class BaseQuickAdapter<T>(
         return index
     }
 
-    fun addFooterView(footerView: View): Int {
-        return addFooterView(footerView, 0)
-    }
 
-    fun addFooterView(footerView: View, index: Int): Int {
-        return addFooterView(footerView, index, LinearLayout.VERTICAL)
-    }
-
-    fun addFooterView(footerView: View, index: Int, orientation: Int): Int {
+    fun addFooterView(footerView: View, index: Int = 0, orientation: Int = LinearLayout.VERTICAL): Int {
         var index = index
         if (mFooterLayout == null) {
             mFooterLayout = LinearLayout(footerView.context)
@@ -159,6 +185,30 @@ abstract class BaseQuickAdapter<T>(
         return index
     }
 
+    fun setEmptyView(emptyView: View) {
+        var insert = false//插入RecyclerView中
+        if (mEmptyLayout == null) {
+            mEmptyLayout = FrameLayout(emptyView.context)
+            val layoutParams = LayoutParams(MATCH_PARENT, MATCH_PARENT)
+            val lp = emptyView.layoutParams
+            if (lp != null) {
+                layoutParams.width = lp.width
+                layoutParams.height = lp.height
+            }
+            mEmptyLayout?.layoutParams = layoutParams
+            insert = true
+        }
+        mEmptyLayout?.run {
+            removeAllViews()
+            addView(emptyView)
+        }
+        if (insert && getEmptyLayoutCount() == 1) {
+            val position = getEmptyLayoutPosition()
+            if (position != -1)
+                notifyItemInserted(position)
+        }
+    }
+
     fun removeHeaderView(headerView: View) {
         if (getHeaderLayoutCount() == 0)
             return
@@ -170,11 +220,35 @@ abstract class BaseQuickAdapter<T>(
         }
     }
 
+    fun removeAllHeaderView() {
+        if (getHeaderLayoutCount() == 0)
+            return
+        mHeaderLayout?.removeAllViews()
+        //清除所有的子View
+        if (getHeaderLayoutCount() == 0) {
+            val position = getHeaderLayoutPosition()
+            if (position != -1)
+                notifyItemRemoved(position)
+        }
+    }
+
     fun removeFooterView(footerView: View) {
         if (getFooterLayoutCount() == 0)
             return
         mFooterLayout?.removeView(footerView)
         if (mFooterLayout?.childCount == 0) {
+            val position = getFooterLayoutPosition()
+            if (position != -1)
+                notifyItemRemoved(position)
+        }
+    }
+
+    fun removeAllFooterView() {
+        if (getFooterLayoutCount() == 0)
+            return
+        mHeaderLayout?.removeAllViews()
+        //清除所有的子View
+        if (getFooterLayoutCount() == 0) {
             val position = getFooterLayoutPosition()
             if (position != -1)
                 notifyItemRemoved(position)
@@ -194,12 +268,27 @@ abstract class BaseQuickAdapter<T>(
         return if (count > 0) 1 else 0
     }
 
+    fun getEmptyLayoutCount(): Int {
+        //当有数据时候，e'm't'p
+        if (mData?.size ?: 0 != 0)
+            return 0
+
+        var count = mEmptyLayout?.childCount ?: 0
+        return if (count > 0) 1 else 0
+    }
+
     private fun getHeaderLayoutPosition(): Int {
         return 0
     }
 
-    private fun getFooterLayoutPosition(): Int {
-        return (mData?.size ?: 0) + getHeaderLayoutCount()
+    private fun getFooterLayoutPosition(): Int = if (getEmptyLayoutCount() == 1) {
+        getHeaderLayoutPosition() + getEmptyLayoutCount()
+    } else {
+        (mData?.size ?: 0) + getHeaderLayoutCount()
+    }
+
+    private fun getEmptyLayoutPosition(): Int {
+        return getHeaderLayoutCount()
     }
 
     private fun bindViewClickListener(baseViewHolder: BaseViewHolder) {
@@ -215,6 +304,14 @@ abstract class BaseQuickAdapter<T>(
             }
     }
 
-    abstract fun convert(viewHolder: BaseViewHolder, item: T)
+    protected fun setFullSpan(holder: RecyclerView.ViewHolder) {
+//        if (holder.itemView.layoutParams is StaggeredGridLayoutManager.LayoutParams) {
+//            val params = holder
+//                .itemView.layoutParams as StaggeredGridLayoutManager.LayoutParams
+//            params.isFullSpan = true
+//        }
+    }
 
+    abstract fun convert(viewHolder: BaseViewHolder, item: T)
 }
+

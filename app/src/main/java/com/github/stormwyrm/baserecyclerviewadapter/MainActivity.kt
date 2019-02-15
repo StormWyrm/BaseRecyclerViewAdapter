@@ -8,7 +8,7 @@ import com.github.stormwyrm.lib.BaseViewHolder
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : BaseActivity() {
-    val title = arrayListOf("Basis Setting", "HeaderAndFooter")
+    val title = arrayListOf("Basis Setting", "HeaderAndFooter","EmptyView")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,6 +20,7 @@ class MainActivity : BaseActivity() {
             when (positioin) {
                 0 -> startActivity(Intent(this@MainActivity,BasisSetttingActivity::class.java))
                 1 -> startActivity(Intent(this@MainActivity,HeaderAndFooterActivity::class.java))
+                2 -> startActivity(Intent(this@MainActivity,EmptyViewActivity::class.java))
             }
         }
         rvMain.layoutManager = GridLayoutManager(this, 2)
