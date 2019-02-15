@@ -3,7 +3,8 @@ package com.github.stormwyrm.baserecyclerviewadapter
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
-import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.github.stormwyrm.lib.BaseQuickAdapter
 import com.github.stormwyrm.lib.BaseViewHolder
 import kotlinx.android.synthetic.main.activity_header_and_footer.*
@@ -19,7 +20,7 @@ class HeaderAndFooterActivity : BaseActivity() {
     }
 
     private fun initAdapter() {
-        val data = arrayListOf("DATA 0", "DATA 1", "DATA 2")
+        val data = arrayListOf("DATA 0", "DATA 1", "DATA 2", "DATA 0", "DATA 1", "DATA 2")
         val adapter = HeaderAndFooterAdapter(data)
         adapter.addHeaderView(getHeaderView(0, View.OnClickListener {
             adapter.addHeaderView(getHeaderView(1, View.OnClickListener { view ->
@@ -31,7 +32,9 @@ class HeaderAndFooterActivity : BaseActivity() {
                 adapter.removeFooterView(view)
             }))
         }))
-        rvHeaderFooter.layoutManager = LinearLayoutManager(this)
+//        rvHeaderFooter.layoutManager = LinearLayoutManager(this)
+//        rvHeaderFooter.layoutManager = GridLayoutManager(this,2)
+        rvHeaderFooter.layoutManager = StaggeredGridLayoutManager(2, RecyclerView.VERTICAL)
         rvHeaderFooter.adapter = adapter
     }
 
@@ -54,9 +57,9 @@ class HeaderAndFooterActivity : BaseActivity() {
     }
 
 
-    class HeaderAndFooterAdapter(data: List<String>) : BaseQuickAdapter<String>(R.layout.item_main,data) {
+    class HeaderAndFooterAdapter(data: List<String>) : BaseQuickAdapter<String>(R.layout.item_main, data) {
         override fun convert(viewHolder: BaseViewHolder, item: String) {
-            viewHolder.setText(R.id.tvTitle,item)
+            viewHolder.setText(R.id.tvTitle, item)
         }
     }
 }

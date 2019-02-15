@@ -9,8 +9,11 @@ import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.annotation.IntRange
 import androidx.annotation.LayoutRes
+import androidx.recyclerview.widget.GridLayoutManager
+import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.LayoutParams
+import androidx.recyclerview.widget.StaggeredGridLayoutManager
 
 abstract class BaseQuickAdapter<T>(
     @LayoutRes val layoutId: Int,
@@ -39,7 +42,23 @@ abstract class BaseQuickAdapter<T>(
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
+        //解决在GridLayoutManager模式下header和Footer无法占满一行
+        val layoutManager = recyclerView.layoutManager
+        if (layoutManager is GridLayoutManager) {
+            layoutManager.spanSizeLookup = object : SpanSizeLookup() {
+                override fun getSpanSize(position: Int): Int {
+                    //根据位置类型 设置item可以占据几行
+                    val itemViewType = getItemViewType(position)
+                    if (isFixedViewType(itemViewType)) {
+                        return layoutManager.spanCount
+                    }
+                    return 1
+                }
+
+            }
+        }
     }
+
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
         mLayoutInflater = LayoutInflater.from(parent.context)
@@ -49,7 +68,7 @@ abstract class BaseQuickAdapter<T>(
                 baseViewHolder = BaseViewHolder(mHeaderLayout!!)
             FOOTER_VIEW ->
                 baseViewHolder = BaseViewHolder(mFooterLayout!!)
-            EMPTY_VIEW ->{
+            EMPTY_VIEW -> {
                 baseViewHolder = BaseViewHolder(mEmptyLayout!!)
             }
             else -> {
@@ -304,12 +323,15 @@ abstract class BaseQuickAdapter<T>(
             }
     }
 
-    protected fun setFullSpan(holder: RecyclerView.ViewHolder) {
-//        if (holder.itemView.layoutParams is StaggeredGridLayoutManager.LayoutParams) {
-//            val params = holder
-//                .itemView.layoutParams as StaggeredGridLayoutManager.LayoutParams
-//            params.isFullSpan = true
-//        }
+    private fun isFixedViewType(type: Int): Boolean {
+        return type == EMPTY_VIEW || type == HEADER_VIEW || type == FOOTER_VIEW
+    }
+
+    private fun setFullSpan(holder: RecyclerView.ViewHolder) {
+        val layoutParams = holder.itemView.layoutParams
+        if (layoutParams is StaggeredGridLayoutManager.LayoutParams) {
+            layoutParams.isFullSpan = true
+        }
     }
 
     abstract fun convert(viewHolder: BaseViewHolder, item: T)

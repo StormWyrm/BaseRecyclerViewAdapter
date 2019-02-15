@@ -2,9 +2,7 @@ package com.github.stormwyrm.baserecyclerviewadapter
 
 import android.os.Bundle
 import android.os.Handler
-import android.view.LayoutInflater
 import android.view.View
-import android.view.ViewGroup
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.stormwyrm.lib.BaseQuickAdapter
 import com.github.stormwyrm.lib.BaseViewHolder
@@ -19,13 +17,13 @@ class EmptyViewActivity : BaseActivity() {
     }
 
     private val noDataView: View by lazy {
-        View.inflate(this, R.layout.layout_empty_view, null)
+        layoutInflater.inflate(R.layout.layout_empty_view, rvEmptyView, false)
     }
     private val errorView: View by lazy {
-        View.inflate(this, R.layout.layout_error_view,null)
+        layoutInflater.inflate(R.layout.layout_error_view, rvEmptyView, false)
     }
     private val loadingView: View by lazy {
-        LayoutInflater.from(rvEmptyView.context).inflate(R.layout.layout_loading_view, rvEmptyView, false)
+        layoutInflater.inflate(R.layout.layout_loading_view, rvEmptyView, false)
     }
 
 
@@ -34,14 +32,14 @@ class EmptyViewActivity : BaseActivity() {
         setBackBtn()
         setTitle("EmptyView Use")
         setContentView(R.layout.activity_empty_view)
+        rvEmptyView.layoutManager = LinearLayoutManager(this)
+        rvEmptyView.adapter = adapter
         noDataView.setOnClickListener {
             freshData()
         }
         errorView.setOnClickListener {
             freshData()
         }
-        rvEmptyView.layoutManager = LinearLayoutManager(this)
-        rvEmptyView.adapter = adapter
         freshData()
     }
 
