@@ -19,6 +19,7 @@
         </activity>
         <activity android:name=".HeaderAndFooterActivity" />
         <activity android:name=".BasisSetttingActivity" />
+        <activity android:name=".AnimationActivity" />
     </application>
 
 </manifest>

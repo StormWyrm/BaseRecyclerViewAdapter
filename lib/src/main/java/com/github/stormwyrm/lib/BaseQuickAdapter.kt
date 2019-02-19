@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.view.animation.LinearInterpolator
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.annotation.IntRange
@@ -14,15 +15,24 @@ import androidx.recyclerview.widget.GridLayoutManager.SpanSizeLookup
 import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.LayoutParams
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
+import com.github.stormwyrm.lib.anim.*
 
 abstract class BaseQuickAdapter<T>(
     @LayoutRes val layoutId: Int,
     var mData: List<T>?
 ) : RecyclerView.Adapter<BaseViewHolder>() {
-    val HEADER_VIEW = 0x00000111
-    val FOOTER_VIEW = 0x00000222
-    val EMPTY_VIEW = 0x00000333
-    val DEFAULT_VIEW = 0x00000444
+    companion object {
+        const val ALPHAIN = 0x00000001
+        const val SCALEIN = 0x00000002
+        const val SLIDEIN_BOTTOM = 0x00000003
+        const val SLIDEIN_LEFT = 0x00000004
+        const val SLIDEIN_RIGHT = 0x00000005
+    }
+
+    private val HEADER_VIEW = 0x00000111
+    private val FOOTER_VIEW = 0x00000222
+    private val EMPTY_VIEW = 0x00000333
+    private val DEFAULT_VIEW = 0x00000444
 
     lateinit var mLayoutInflater: LayoutInflater
         private set
@@ -35,6 +45,15 @@ abstract class BaseQuickAdapter<T>(
     var onItemLongClickListener: ((BaseQuickAdapter<*>, View, Int) -> Boolean)? = null
     var onItemChildClickListener: ((BaseQuickAdapter<*>, View, Int) -> Unit)? = null
     var onItemChildLongClickListener: ((BaseQuickAdapter<*>, View, Int) -> Boolean)? = null
+
+    var isOpenAnimation: Boolean = false //是否开启动画
+
+        private set
+    var isFirstOpenOnly: Boolean = true //仅仅第一次进入时候加载动画
+    var animDuration: Long = 300
+    var mLastPositioin: Int = -1 //上一次加载动画的item，用于判断是否加载过动画
+        private set
+    var defaultAnimation: BaseAnimation = AlphaInAnimation()
 
     constructor(layoutId: Int) : this(layoutId, null)
 
@@ -58,7 +77,6 @@ abstract class BaseQuickAdapter<T>(
             }
         }
     }
-
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
         mLayoutInflater = LayoutInflater.from(parent.context)
@@ -137,8 +155,11 @@ abstract class BaseQuickAdapter<T>(
         val type = holder.itemViewType
         if (type == EMPTY_VIEW || type == HEADER_VIEW || type == FOOTER_VIEW) {
             setFullSpan(holder)
+        } else {
+            addAnimation(holder)
         }
     }
+
 
     fun setNewData(newData: List<T>) {
         mData = newData
@@ -274,6 +295,31 @@ abstract class BaseQuickAdapter<T>(
         }
     }
 
+    fun openLoadAnimation(animationType: Int = -1) {
+        isOpenAnimation = true
+        when (animationType) {
+            ALPHAIN ->
+                defaultAnimation = AlphaInAnimation()
+            SCALEIN ->
+                defaultAnimation = ScaleInAnimation()
+            SLIDEIN_LEFT ->
+                defaultAnimation = SlideInLeftAnimation()
+            SLIDEIN_RIGHT ->
+                defaultAnimation = SlideInRightAnimation()
+            SLIDEIN_BOTTOM ->
+                defaultAnimation = SlideInBottomAnimation()
+        }
+    }
+
+    fun openLoadAnimation(customAnimation: BaseAnimation) {
+        isOpenAnimation = true
+        defaultAnimation = customAnimation
+    }
+
+    fun closeLoadAnimation() {
+        this.isOpenAnimation = false
+    }
+
     /**
      * if has headerView will be return 1,else will be return 0
      */
@@ -321,6 +367,19 @@ abstract class BaseQuickAdapter<T>(
                 return@setOnLongClickListener onItemLongClickListener?.invoke(this, it, baseViewHolder.layoutPosition)
                     ?: false
             }
+    }
+
+    private fun addAnimation(holder: BaseViewHolder) {
+        if (isOpenAnimation) {
+            if (!isFirstOpenOnly || holder.layoutPosition > mLastPositioin) {
+                mLastPositioin = holder.layoutPosition
+                for (animation in defaultAnimation.getAnimators(holder.itemView)) {
+                    animation.duration = animDuration
+                    animation.interpolator = LinearInterpolator()
+                    animation.start()
+                }
+            }
+        }
     }
 
     private fun isFixedViewType(type: Int): Boolean {

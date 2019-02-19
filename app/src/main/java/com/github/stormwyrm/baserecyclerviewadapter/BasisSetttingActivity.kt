@@ -35,14 +35,14 @@ class BasisSetttingActivity : BaseActivity() {
             "string 6"
         )
         val adapter = BasisSettingAdapter(data)
-        adapter.onItemLongClickListener = { helper, view, position ->
+        adapter.onItemLongClickListener = { _, _, position ->
             Toast.makeText(this, "长按位置: $position", Toast.LENGTH_SHORT).show()
             true
         }
-        adapter.onItemClickListener = { helper, view, position ->
+        adapter.onItemClickListener = { _, _, position ->
             Toast.makeText(this, "点击位置: $position", Toast.LENGTH_SHORT).show()
         }
-        adapter.onItemChildClickListener = { helper, view, position ->
+        adapter.onItemChildClickListener = { _, view, position ->
             when (view.id) {
                 R.id.iv -> Toast.makeText(this, "点击图片: $position", Toast.LENGTH_SHORT).show()
                 R.id.ll -> Toast.makeText(this, "点击文字: $position", Toast.LENGTH_SHORT).show()
