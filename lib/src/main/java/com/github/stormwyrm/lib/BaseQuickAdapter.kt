@@ -33,7 +33,7 @@ abstract class BaseQuickAdapter<T>(
     private val HEADER_VIEW = 0x00000111
     private val FOOTER_VIEW = 0x00000222
     private val EMPTY_VIEW = 0x00000333
-    private val DEFAULT_VIEW = 0x00000444
+    val DEFAULT_VIEW = 0x00000444
 
     lateinit var mLayoutInflater: LayoutInflater
         private set
@@ -169,16 +169,16 @@ abstract class BaseQuickAdapter<T>(
         }
     }
 
-    protected fun onCreateDefViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
+    protected open fun onCreateDefViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
         val layoutId = multiTypeDelegate?.getLayoutId(viewType) ?: layoutId
         return createBaseViewHolder(parent, layoutId)
     }
 
-    private fun createBaseViewHolder(parent: ViewGroup, layoutId: Int): BaseViewHolder {
+    fun createBaseViewHolder(parent: ViewGroup, layoutId: Int): BaseViewHolder {
         return BaseViewHolder(LayoutInflater.from(parent.context).inflate(layoutId, parent, false))
     }
 
-    protected fun getDefItemViewType(data: List<T>?, position: Int): Int {
+    protected open fun getDefItemViewType(data: List<T>?, position: Int): Int {
         return multiTypeDelegate?.getDefItemViewType(data, position) ?: DEFAULT_VIEW
     }
 
