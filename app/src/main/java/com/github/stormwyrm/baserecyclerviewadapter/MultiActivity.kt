@@ -8,7 +8,7 @@ import com.github.stormwyrm.lib.BaseViewHolder
 import kotlinx.android.synthetic.main.activity_main.*
 
 class MultiActivity : BaseActivity() {
-    val title = arrayListOf("MULTI ITEM","MULTI ITEM RV")
+    val title = mutableListOf("MULTI ITEM","MULTI ITEM RV")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,7 +26,7 @@ class MultiActivity : BaseActivity() {
         rvMain.adapter = adapter
     }
 
-    private class MainAdapter(data: List<String>) : BaseQuickAdapter<String>(R.layout.item_main, data) {
+    private class MainAdapter(data: MutableList<String>) : BaseQuickAdapter<String>(R.layout.item_main, data) {
 
         override fun convert(viewHolder: BaseViewHolder, item: String) {
             viewHolder.setText(R.id.tvTitle, item)

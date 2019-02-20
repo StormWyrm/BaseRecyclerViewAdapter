@@ -27,7 +27,7 @@ class MultiItemRvActivity : BaseActivity() {
         rv.adapter = adpter
     }
 
-    class MultiItemAdapter(data: List<MultiBean>) : BaseQuickAdapter<MultiBean>(data) {
+    class MultiItemAdapter(data: MutableList<MultiBean>) : BaseQuickAdapter<MultiBean>(data) {
         companion object {
             const val MULTI_BEAN_FIRST = 1
             const val MULTI_BEAN_SECOND = 2

@@ -71,7 +71,7 @@ class EmptyViewActivity : BaseActivity() {
         }, 3000)
     }
 
-    class EmptyViewAdapter(data: List<String>) : BaseQuickAdapter<String>(R.layout.item_main, data) {
+    class EmptyViewAdapter(data: MutableList<String>) : BaseQuickAdapter<String>(R.layout.item_main, data) {
         override fun convert(viewHolder: BaseViewHolder, item: String) {
             viewHolder.setText(R.id.tvTitle, item)
         }

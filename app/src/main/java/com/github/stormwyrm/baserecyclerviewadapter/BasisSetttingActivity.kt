@@ -60,7 +60,7 @@ class BasisSetttingActivity : BaseActivity() {
         rv.adapter = adapter
     }
 
-    private class BasisSettingAdapter(data: List<String>) : BaseQuickAdapter<String>(R.layout.item_basis_settting, data) {
+    private class BasisSettingAdapter(data: MutableList<String>) : BaseQuickAdapter<String>(R.layout.item_basis_settting, data) {
 
         override fun convert(viewHolder: BaseViewHolder, item: String) {
             viewHolder.setText(R.id.textView1, item)

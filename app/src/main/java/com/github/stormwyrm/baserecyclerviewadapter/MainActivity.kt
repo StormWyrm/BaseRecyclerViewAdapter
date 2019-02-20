@@ -29,7 +29,7 @@ class MainActivity : BaseActivity() {
         rvMain.adapter = adapter
     }
 
-    private class MainAdapter(data: List<String>) : BaseQuickAdapter<String>(R.layout.item_main, data) {
+    private class MainAdapter(data: MutableList<String>) : BaseQuickAdapter<String>(R.layout.item_main, data) {
 
         override fun convert(viewHolder: BaseViewHolder, item: String) {
             viewHolder.setText(R.id.tvTitle, item)

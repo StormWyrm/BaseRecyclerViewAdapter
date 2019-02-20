@@ -57,7 +57,7 @@ class HeaderAndFooterActivity : BaseActivity() {
     }
 
 
-    class HeaderAndFooterAdapter(data: List<String>) : BaseQuickAdapter<String>(R.layout.item_main, data) {
+    class HeaderAndFooterAdapter(data: MutableList<String>) : BaseQuickAdapter<String>(R.layout.item_main, data) {
         override fun convert(viewHolder: BaseViewHolder, item: String) {
             viewHolder.setText(R.id.tvTitle, item)
         }
