@@ -20,7 +20,7 @@ import com.github.stormwyrm.lib.multi.MultiTypeDelegate
 
 abstract class BaseQuickAdapter<T>(
     @LayoutRes val layoutId: Int,
-    var mData: List<T>?
+    var mData: MutableList<T>?
 ) : RecyclerView.Adapter<BaseViewHolder>() {
     companion object {
         const val ALPHAIN = 0x00000001
@@ -60,7 +60,7 @@ abstract class BaseQuickAdapter<T>(
 
     constructor(layoutId: Int) : this(layoutId, null)
 
-    constructor(data: List<T>?) : this(0, data)
+    constructor(data: MutableList<T>?) : this(0, data)
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
@@ -182,9 +182,41 @@ abstract class BaseQuickAdapter<T>(
         return multiTypeDelegate?.getDefItemViewType(data, position) ?: DEFAULT_VIEW
     }
 
-    fun setNewData(newData: List<T>) {
+    fun setNewData(newData: MutableList<T>) {
         mData = newData
         notifyDataSetChanged()
+    }
+
+    fun addData(data: T) {
+        addData(mData?.size ?: 0, data)
+    }
+
+    fun addData(index: Int, data: T) {
+        if (mData == null)
+            mData = ArrayList()
+        mData?.add(index, data)
+        notifyItemInserted(getHeaderLayoutCount() + index)
+    }
+
+    /**
+     * 移除在某个位置的data
+     */
+    fun remove(index: Int) {
+        if (mData?.size ?: 0 == 0)
+            return
+        if (mData?.removeAt(index) != null) {
+            notifyItemRemoved(index + getHeaderLayoutPosition())
+        }
+    }
+
+    /**
+     * change data
+     */
+    fun setData(index: Int, data: T) {
+        if (mData?.size ?: 0 == 0)
+            return
+        mData?.set(index, data)
+        notifyItemChanged(index + getHeaderLayoutCount())
     }
 
     fun getItem(@IntRange(from = 0) position: Int): T =
