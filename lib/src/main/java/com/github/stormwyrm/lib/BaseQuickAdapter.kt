@@ -390,11 +390,11 @@ abstract class BaseQuickAdapter<T>(
             }
     }
 
-    private fun addAnimation(holder: BaseViewHolder) {
+    private fun addAnimation(helper: BaseViewHolder) {
         if (isOpenAnimation) {
-            if (!isFirstOpenOnly || holder.layoutPosition > mLastPositioin) {
-                mLastPositioin = holder.layoutPosition
-                for (animation in defaultAnimation.getAnimators(holder.itemView)) {
+            if (!isFirstOpenOnly || helper.layoutPosition > mLastPositioin) {
+                mLastPositioin = helper.layoutPosition
+                for (animation in defaultAnimation.getAnimators(helper.itemView)) {
                     animation.duration = animDuration
                     animation.interpolator = LinearInterpolator()
                     animation.start()

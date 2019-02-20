@@ -5,10 +5,9 @@ import android.view.ViewGroup
 import androidx.annotation.LayoutRes
 import com.github.stormwyrm.lib.entity.MultiItemEntity
 
-abstract class BaseMultiQuickAdapter<T : MultiItemEntity>(
-    layoutId: Int,
+abstract class BaseMultiItemQuickAdapter<T : MultiItemEntity>(
     mData: List<T>?
-) : BaseQuickAdapter<T>(layoutId, mData) {
+) : BaseQuickAdapter<T>(mData) {
     val layouts: SparseArray<Int> = SparseArray()
 
     override fun onCreateDefViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
