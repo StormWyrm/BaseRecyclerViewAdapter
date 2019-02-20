@@ -7,22 +7,19 @@ import com.github.stormwyrm.lib.BaseQuickAdapter
 import com.github.stormwyrm.lib.BaseViewHolder
 import kotlinx.android.synthetic.main.activity_main.*
 
-class MainActivity : BaseActivity() {
-    val title = arrayListOf("BASIS SETTING", "HEADERANDFOOTER", "EMPTYVIEW","ANIMATION","MULTI ITEM")
+class MultiActivity : BaseActivity() {
+    val title = arrayListOf("MULTI ITEM","MULTI ITEM RV")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setTitle("BaseRecyclerViewAdapter")
+        setTitle("Multi Item")
         setBackListener(null)
         setContentView(R.layout.activity_main)
         val adapter = MainAdapter(title)
         adapter.onItemClickListener = { _, _, position ->
             when (position) {
-                0 -> startActivity(Intent(this@MainActivity, BasisSetttingActivity::class.java))
-                1 -> startActivity(Intent(this@MainActivity, HeaderAndFooterActivity::class.java))
-                2 -> startActivity(Intent(this@MainActivity, EmptyViewActivity::class.java))
-                3 -> startActivity(Intent(this@MainActivity, AnimationActivity::class.java))
-                4 -> startActivity(Intent(this@MainActivity, MultiActivity::class.java))
+                0 -> startActivity(Intent(this@MultiActivity, MultiItemActivity::class.java))
+                1 -> startActivity(Intent(this@MultiActivity, MultiItemRvActivity::class.java))
             }
         }
         rvMain.layoutManager = GridLayoutManager(this, 2)
