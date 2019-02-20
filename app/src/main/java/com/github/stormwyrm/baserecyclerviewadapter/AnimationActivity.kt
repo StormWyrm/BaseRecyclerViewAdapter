@@ -3,7 +3,6 @@ package com.github.stormwyrm.baserecyclerviewadapter
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
-import androidx.appcompat.view.menu.MenuAdapter
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.github.stormwyrm.lib.BaseQuickAdapter
 import com.github.stormwyrm.lib.BaseViewHolder

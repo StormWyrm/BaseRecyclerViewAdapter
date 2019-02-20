@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.RecyclerView.LayoutParams
 import androidx.recyclerview.widget.StaggeredGridLayoutManager
 import com.github.stormwyrm.lib.anim.*
+import com.github.stormwyrm.lib.multi.MultiTypeDelegate
 
 abstract class BaseQuickAdapter<T>(
     @LayoutRes val layoutId: Int,
@@ -54,6 +55,9 @@ abstract class BaseQuickAdapter<T>(
         private set
     var defaultAnimation: BaseAnimation = AlphaInAnimation()
 
+    //多布局
+    var multiTypeDelegate: MultiTypeDelegate<T>? = null
+
     constructor(layoutId: Int) : this(layoutId, null)
 
     constructor(data: List<T>?) : this(0, data)
@@ -89,19 +93,24 @@ abstract class BaseQuickAdapter<T>(
                 baseViewHolder = BaseViewHolder(mEmptyLayout!!)
             }
             else -> {
-                val itemView = mLayoutInflater.inflate(layoutId, parent, false)
-                baseViewHolder = BaseViewHolder(itemView)
-                baseViewHolder.adapter = this
+                baseViewHolder = onCreateDefViewHolder(parent, viewType)
                 bindViewClickListener(baseViewHolder)
             }
         }
+        baseViewHolder.adapter = this
         return baseViewHolder
     }
 
     override fun onBindViewHolder(holder: BaseViewHolder, position: Int) {
         val itemViewType = getItemViewType(position)
         when (itemViewType) {
-            DEFAULT_VIEW -> {
+            HEADER_VIEW -> {
+            }
+            FOOTER_VIEW -> {
+            }
+            EMPTY_VIEW -> {
+            }
+            else -> {
                 convert(holder, getItem(position - getHeaderLayoutCount()))
             }
         }
@@ -142,12 +151,13 @@ abstract class BaseQuickAdapter<T>(
             val adapterCount = mData?.size ?: 0
             //判断是否为adapter中的布局
             if (adjPosition < adapterCount)
-                DEFAULT_VIEW
+                getDefItemViewType(mData, adjPosition)
             else {
                 FOOTER_VIEW
             }
         }
     }
+
 
     override fun onViewAttachedToWindow(holder: BaseViewHolder) {
         super.onViewAttachedToWindow(holder)
@@ -159,6 +169,18 @@ abstract class BaseQuickAdapter<T>(
         }
     }
 
+    protected fun onCreateDefViewHolder(parent: ViewGroup, viewType: Int): BaseViewHolder {
+        val layoutId = multiTypeDelegate?.getLayoutId(viewType) ?: layoutId
+        return createBaseViewHolder(parent, layoutId)
+    }
+
+    private fun createBaseViewHolder(parent: ViewGroup, layoutId: Int): BaseViewHolder {
+        return BaseViewHolder(LayoutInflater.from(parent.context).inflate(layoutId, parent, false))
+    }
+
+    protected fun getDefItemViewType(data: List<T>?, position: Int): Int {
+        return multiTypeDelegate?.getDefItemViewType(data, position) ?: DEFAULT_VIEW
+    }
 
     fun setNewData(newData: List<T>) {
         mData = newData
@@ -333,7 +355,7 @@ abstract class BaseQuickAdapter<T>(
     }
 
     fun getEmptyLayoutCount(): Int {
-        //当有数据时候，e'm't'p
+        //当有数据时候
         if (mData?.size ?: 0 != 0)
             return 0
 
