@@ -6,6 +6,6 @@ import android.view.View
 
 class SlideInBottomAnimation : BaseAnimation {
     override fun getAnimators(view: View): Array<Animator> {
-        return arrayOf(ObjectAnimator.ofFloat(view, "translationY", view.rootView.height.toFloat(), 0f))
+        return arrayOf(ObjectAnimator.ofFloat(view, "translationY", view.measuredHeight.toFloat() / 2, 0f))
     }
 }

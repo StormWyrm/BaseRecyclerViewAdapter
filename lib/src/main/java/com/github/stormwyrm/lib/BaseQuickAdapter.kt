@@ -47,7 +47,6 @@ abstract class BaseQuickAdapter<T>(
     var onItemChildLongClickListener: ((BaseQuickAdapter<*>, View, Int) -> Boolean)? = null
 
     var isOpenAnimation: Boolean = false //是否开启动画
-
         private set
     var isFirstOpenOnly: Boolean = true //仅仅第一次进入时候加载动画
     var animDuration: Long = 300
